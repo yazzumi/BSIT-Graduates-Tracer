@@ -1,0 +1,22 @@
+:root {
+    --color-1: #000000;
+    --color-5: #0a0a0a;
+    --color-7: #1a1a1a;
+    --accent: #3a82f6;
+    --accent-glow: rgba(58, 130, 246, 0.3);
+    --color-bg: #000000;
+    --color-card: #0a0a0a;
+    --color-border: #1a1a1a;
+    --accent-blue: #3a82f6;
+    --accent-yellow: #eab308;
+    --accent-purple: #a855f7;
+    --accent-red: #ef4444;
+}
+
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
