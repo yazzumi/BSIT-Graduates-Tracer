@@ -1,3 +1,58 @@
+<?php
+session_start();
+require_once "../config/db_conn.php";
+
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
+    
+    if (!empty($username) && !empty($password)) {
+        try {
+            // Query admin user from existing admin table
+            $stmt = $pdo->prepare("SELECT admin_id, username, password FROM admin WHERE username = :username");
+            $stmt->execute([':username' => $username]);
+            $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($admin) {
+                // Check password (supports both plain text and hashed passwords)
+                $passwordMatch = false;
+                
+                // Try hashed password first
+                if (password_verify($password, $admin['password'])) {
+                    $passwordMatch = true;
+                } 
+                // Fallback to plain text comparison for existing passwords
+                elseif ($password === $admin['password']) {
+                    $passwordMatch = true;
+                }
+                
+                if ($passwordMatch) {
+                    // Set session variables
+                    $_SESSION['admin_logged_in'] = true;
+                    $_SESSION['admin_id'] = $admin['admin_id'];
+                    $_SESSION['admin_username'] = $admin['username'];
+                    $_SESSION['admin_name'] = $admin['username']; // Use username as name
+                    
+                    // Redirect to dashboard
+                    header("Location: dashboard.php");
+                    exit();
+                } else {
+                    $error = 'Invalid username or password';
+                }
+            } else {
+                $error = 'Invalid username or password';
+            }
+        } catch (PDOException $e) {
+            error_log("Admin login error: " . $e->getMessage());
+            $error = 'Database error. Please try again later.';
+        }
+    } else {
+        $error = 'Please enter both username and password';
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -140,6 +195,39 @@
         }
 
         .back-link:hover { color: #fff; }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .bg-glow {
+                width: 300px;
+                height: 300px;
+            }
+            
+            .glass-card {
+                margin: 1rem;
+                padding: 30px 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .glass-card {
+                padding: 25px 20px;
+            }
+            
+            h2 {
+                font-size: 1.5rem !important;
+            }
+            
+            .input-field {
+                padding: 12px 14px 12px 40px;
+                font-size: 13px;
+            }
+            
+            .btn-login {
+                padding: 12px;
+                font-size: 11px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -155,14 +243,23 @@
         <h2 class="text-2xl font-black tracking-tight mb-2">Admin Login</h2>
         <p class="text-gray-500 text-[10px] uppercase tracking-[0.2em] mb-6">Management Portal</p>
 
+        <?php if (!empty($error)): ?>
+        <div class="notice-banner" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3);">
+            <i class="fas fa-exclamation-triangle text-danger text-xs"></i>
+            <span class="text-[10px] text-danger font-bold uppercase tracking-widest text-left">
+                <?php echo htmlspecialchars($error); ?>
+            </span>
+        </div>
+        <?php else: ?>
         <div class="notice-banner">
             <i class="fas fa-lock text-danger text-xs"></i>
             <span class="text-[10px] text-danger font-bold uppercase tracking-widest text-left">
                 Authorized Personnel Only
             </span>
         </div>
+        <?php endif; ?>
 
-        <form action="auth.php" method="POST" class="text-left">
+        <form action="login.php" method="POST" class="text-left">
             <div class="input-group">
                 <i class="fas fa-user input-icon"></i>
                 <input type="text" name="username" class="input-field" placeholder="Username" required>

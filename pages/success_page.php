@@ -77,6 +77,51 @@
             color: #fff;
             box-shadow: 0 0 20px rgba(58, 130, 246, 0.4);
         }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .success-card {
+                padding: 2rem;
+                margin: 1rem;
+                border-radius: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem !important;
+            }
+            
+            .w-20 {
+                width: 4rem !important;
+                height: 4rem !important;
+            }
+            
+            .w-20 i {
+                font-size: 1.5rem !important;
+            }
+            
+            p {
+                font-size: 0.85rem !important;
+            }
+            
+            .btn-home {
+                padding: 0.75rem 2rem;
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem !important;
+            }
+            
+            h2 {
+                font-size: 0.6rem !important;
+            }
+            
+            .success-card {
+                padding: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -205,5 +250,7 @@
 
         animate();
     </script>
+
+    <?php include 'includes/theme_toggle.php'; ?>
 </body>
 </html>

@@ -65,6 +65,54 @@
             box-shadow: 0 0 15px var(--accent-purple); 
             width: 50%; /* Halfway through the journey */
         }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+            }
+            
+            .step-container {
+                height: auto;
+                min-height: 100vh;
+                padding: 2rem 0;
+            }
+            
+            h1 {
+                font-size: 2rem !important;
+            }
+            
+            h2 {
+                font-size: 1.25rem !important;
+            }
+            
+            p {
+                font-size: 0.9rem !important;
+            }
+            
+            .bg-[#0a0a0a] {
+                padding: 1.5rem !important;
+            }
+            
+            .btn-primary, .btn-outline {
+                padding: 1rem !important;
+                font-size: 1.25rem !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem !important;
+            }
+            
+            h2 {
+                font-size: 1rem !important;
+            }
+            
+            .flex-col.md\:flex-row {
+                flex-direction: column !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -110,9 +158,15 @@
 
     <script>
         function handleChoice(val) {
-            // If they have experience, take them to the previous experience wizard
-            // If not, proceed to the final submission/review page
-            const target = (val === 'YES') ? 'previous_experience.php' : 'final_submit.php';
+            // Save unemployed status to localStorage
+            let tracerData = JSON.parse(localStorage.getItem('tracer_payload')) || {};
+            tracerData.employment_status = 'Unemployed';
+            tracerData.has_previous_exp = val;
+            localStorage.setItem('tracer_payload', JSON.stringify(tracerData));
+            
+            // If they have experience, take them to previous experience wizard
+            // If not, proceed to final submission/review page
+            const target = (val === 'YES') ? 'previous_jobs.php' : 'final_submit.php';
             
             // Adding a small exit animation before redirecting
             document.querySelector('.step-container').style.opacity = '0';
@@ -120,9 +174,11 @@
             document.querySelector('.step-container').style.transition = 'all 0.4s ease';
 
             setTimeout(() => {
-                window.location.href = target + "?status=unemployed&has_exp=" + val;
+                window.location.href = target;
             }, 400);
         }
     </script>
+
+    <?php include 'includes/theme_toggle.php'; ?>
 </body>
 </html>

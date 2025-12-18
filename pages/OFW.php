@@ -102,6 +102,80 @@
             width: 100%;
         }
         .progress-fill { height: 100%; background: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple); width: 0%; transition: width 0.6s ease; }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+            }
+            
+            .step-container.active {
+                height: auto;
+                min-height: 85vh;
+                padding: 2rem 0;
+            }
+            
+            .input-focus {
+                font-size: 1.5rem;
+                padding: 0.75rem;
+            }
+            
+            h1 {
+                font-size: 1.75rem !important;
+                margin-bottom: 1.5rem !important;
+            }
+            
+            .choice-card {
+                padding: 1rem;
+                font-size: 0.75rem;
+            }
+            
+            .hidden-radio:checked + .choice-card {
+                font-size: 0.8rem;
+            }
+            
+            .grid {
+                gap: 0.75rem !important;
+            }
+            
+            #next, #prev {
+                padding: 0.75rem 1.5rem;
+                font-size: 10px;
+            }
+            
+            .fixed.bottom-12 {
+                bottom: 1rem;
+                padding: 0 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .input-focus {
+                font-size: 1.2rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem !important;
+            }
+            
+            .choice-card {
+                padding: 0.75rem;
+                font-size: 0.65rem;
+            }
+            
+            .grid-cols-2 {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .flex.gap-10 {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .flex.gap-10 button {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -118,20 +192,26 @@
             <input type="text" name="company_name" placeholder="Type international company..." class="input-focus" autocomplete="off">
         </div>
 
-        <div class="step-container">
+        <div class="step-container" data-required="company_address">
             <span class="text-purple-500 font-mono text-xs tracking-[0.5em] mb-4">02 // LOCATION</span>
             <h1 class="text-4xl md:text-5xl font-extrabold mb-12 text-center">Company Address</h1>
             <input type="text" name="company_address" placeholder="City, Country..." class="input-focus !text-2xl" autocomplete="off">
         </div>
 
+        <div class="step-container" data-required="country">
+            <span class="text-purple-500 font-mono text-xs tracking-[0.5em] mb-4">03 // COUNTRY</span>
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-12 text-center">Country</h1>
+            <input type="text" name="country" placeholder="e.g., United Arab Emirates" class="input-focus" autocomplete="off">
+        </div>
+
         <div class="step-container">
-            <span class="text-purple-500 font-mono text-xs tracking-[0.5em] mb-4">03 // INDUSTRY</span>
+            <span class="text-purple-500 font-mono text-xs tracking-[0.5em] mb-4">04 // INDUSTRY</span>
             <h1 class="text-4xl md:text-5xl font-extrabold mb-12 text-center">Company Type</h1>
             <input type="text" name="company_type" placeholder="e.g. Technology, Logistics..." class="input-focus !text-2xl" autocomplete="off">
         </div>
 
         <div class="step-container">
-            <span class="text-purple-500 font-mono text-xs tracking-[0.5em] mb-4">04 // DESIGNATION</span>
+            <span class="text-purple-500 font-mono text-xs tracking-[0.5em] mb-4">05 // DESIGNATION</span>
             <h1 class="text-3xl md:text-4xl font-extrabold mb-8 text-center">Overseas Position</h1>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-5 w-full custom-scroll overflow-y-auto max-h-[55vh] p-4">
                 <?php
@@ -156,7 +236,7 @@
         </div>
 
         <div class="step-container">
-            <span class="text-purple-500 font-mono text-xs tracking-[0.5em] mb-4">05 // LEGAL</span>
+            <span class="text-purple-500 font-mono text-xs tracking-[0.5em] mb-4">06 // LEGAL</span>
             <h1 class="text-4xl md:text-5xl font-extrabold mb-12 text-center">Employment Status</h1>
             <div class="grid grid-cols-1 md:grid-cols-5 gap-6 w-full px-4">
                 <?php
@@ -164,7 +244,7 @@
                 foreach($status_list as $status) {
                     echo "
                     <label class='h-40'>
-                        <input type='radio' name='employment_status' value='$status' class='hidden hidden-radio'>
+                        <input type='radio' name='ofw_legal_status' value='$status' class='hidden hidden-radio'>
                         <div class='choice-card text-xl'>$status</div>
                     </label>";
                 }
@@ -173,7 +253,7 @@
         </div>
 
         <div class="step-container">
-            <span class="text-purple-500 font-mono text-xs tracking-[0.5em] mb-4">06 // TIMELINE</span>
+            <span class="text-purple-500 font-mono text-xs tracking-[0.5em] mb-4">07 // TIMELINE</span>
             <h1 class="text-4xl md:text-5xl font-extrabold mb-10 text-center">Inclusive Years</h1>
             <div class="flex flex-col md:flex-row gap-10 justify-center items-center w-full">
                 <div class="w-full md:w-1/3 text-center">
@@ -188,7 +268,7 @@
         </div>
 
         <div class="step-container">
-            <span class="text-purple-500 font-mono text-xs tracking-[0.5em] mb-4">07 // HISTORY</span>
+            <span class="text-purple-500 font-mono text-xs tracking-[0.5em] mb-4">08 // HISTORY</span>
             <h1 class="text-4xl md:text-5xl font-extrabold mb-12 text-center">Previous Experiences?</h1>
             <div class="flex gap-10">
                 <button type="button" onclick="finalize('YES')" class="w-56 py-6 bg-purple-600 rounded-3xl font-black text-2xl hover:scale-110 transition-transform shadow-2xl shadow-purple-900/40">YES</button>
@@ -247,6 +327,15 @@
             }
         });
 
+        // Clear other input when selecting a radio
+        posRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.checked && otherPosInput) {
+                    otherPosInput.value = "";
+                }
+            });
+        });
+
         nextBtn.addEventListener('click', () => {
             if(current < steps.length - 1) {
                 current++;
@@ -269,10 +358,33 @@
         });
 
         function finalize(choice) {
-            window.location.href = "final_submit.php?ofw=true&prev=" + choice;
+            // Save all OFW form data to localStorage
+            const formData = new FormData(document.getElementById('ofwForm'));
+            const data = Object.fromEntries(formData.entries());
+            
+            // Get existing data from localStorage or create new object
+            let tracerData = JSON.parse(localStorage.getItem('tracer_payload')) || {};
+            
+            // Merge OFW data with existing data
+            Object.assign(tracerData, data, {
+                has_previous_exp: choice,
+                employment_status: 'OFW'
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('tracer_payload', JSON.stringify(tracerData));
+            
+            // Redirect based on previous experience choice
+            if (choice === 'YES') {
+                window.location.href = "previous_jobs.php";
+            } else {
+                window.location.href = "final_submit.php";
+            }
         }
 
         updateUI();
     </script>
+
+    <?php include 'includes/theme_toggle.php'; ?>
 </body>
 </html>

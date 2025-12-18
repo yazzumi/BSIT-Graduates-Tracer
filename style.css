@@ -1,3 +1,4 @@
+/* Dark Theme (Default) */
 :root {
     --color-1: #000000;
     --color-5: #0a0a0a;
@@ -11,8 +12,31 @@
     --accent-yellow: #eab308;
     --accent-purple: #a855f7;
     --accent-red: #ef4444;
+    --error: #ef4444;
+    --text-primary: #ffffff;
+    --text-secondary: #a3a3a3;
+    --text-muted: #71717a;
 }
 
+/* Light Theme */
+[data-theme="light"] {
+    --color-1: #ffffff;
+    --color-5: #f5f5f5;
+    --color-7: #e5e5e5;
+    --accent: #2563eb;
+    --accent-glow: rgba(37, 99, 235, 0.2);
+    --color-bg: #ffffff;
+    --color-card: #f8fafc;
+    --color-border: #e2e8f0;
+    --accent-blue: #2563eb;
+    --accent-yellow: #ca8a04;
+    --accent-purple: #9333ea;
+    --accent-red: #dc2626;
+    --error: #dc2626;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+}
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
 

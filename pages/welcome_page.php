@@ -10,11 +10,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
 
-        :root {
-            --accent: #3a82f6;
-            --accent-glow: rgba(58, 130, 246, 0.4);
-        }
-
         body {
             background-color: #000;
             color: #fff;
@@ -101,6 +96,142 @@
                               linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
             background-size: 50px 50px;
             z-index: -1;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 1024px) {
+            .bg-glow {
+                width: 400px;
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+                padding-bottom: 100px;
+            }
+            
+            .bg-glow {
+                width: 300px;
+                height: 300px;
+            }
+            
+            h1 {
+                font-size: 2.5rem !important;
+            }
+            
+            .glass-panel {
+                padding: 1rem;
+            }
+            
+            .btn-premium {
+                padding: 1rem 2rem;
+                font-size: 0.75rem;
+            }
+            
+            footer {
+                position: relative !important;
+                bottom: auto !important;
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+                padding: 2rem 1rem !important;
+                margin-top: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem !important;
+            }
+            
+            .nav-login {
+                padding: 0.5rem 1rem;
+                font-size: 8px;
+            }
+            
+            p {
+                font-size: 0.9rem !important;
+            }
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #a3a3a3;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-toggle:hover {
+            color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        /* Light Theme Overrides */
+        [data-theme="light"] body {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        [data-theme="light"] .bg-glow {
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
+        }
+
+        [data-theme="light"] .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .glass-panel h3 {
+            color: #0f172a;
+        }
+
+        [data-theme="light"] .glass-panel p {
+            color: #64748b;
+        }
+
+        [data-theme="light"] h1 {
+            color: #0f172a;
+        }
+
+        [data-theme="light"] .nav-login {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: #e2e8f0;
+            color: #0f172a !important;
+        }
+
+        [data-theme="light"] .btn-premium {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        [data-theme="light"] .theme-toggle {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #e2e8f0;
+            color: #64748b;
+        }
+
+        [data-theme="light"] #dynamic-text {
+            color: #0f172a;
+        }
+
+        [data-theme="light"] footer a,
+        [data-theme="light"] footer div {
+            color: #64748b;
         }
     </style>
 </head>
@@ -234,6 +365,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(typeWriter, 1000);
         });
+
     </script>
+
+    <?php include 'includes/theme_toggle.php'; ?>
 </body>
 </html>

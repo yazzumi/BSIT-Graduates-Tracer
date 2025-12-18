@@ -82,6 +82,95 @@
 
         .progress-bar { height: 4px; background: #1a1a1a; position: fixed; top: 0; left: 0; z-index: 100; width: 100%; }
         .progress-fill { height: 100%; background: #3a82f6; box-shadow: 0 0 15px #3a82f6; width: 16.6%; transition: width 0.6s ease; }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+            }
+            
+            .step-container.active {
+                height: auto;
+                min-height: 85vh;
+                padding: 2rem 0;
+            }
+            
+            .input-focus {
+                font-size: 1.5rem;
+                padding: 0.75rem;
+            }
+            
+            h1 {
+                font-size: 1.75rem !important;
+                margin-bottom: 1.5rem !important;
+            }
+            
+            .choice-card {
+                padding: 1rem;
+                font-size: 0.75rem;
+            }
+            
+            .date-grid {
+                grid-template-columns: 1fr !important;
+                gap: 2rem !important;
+            }
+            
+            .fixed.top-12 {
+                top: 0.5rem;
+            }
+            
+            .fixed.top-12 span {
+                font-size: 8px;
+                padding: 0.5rem 1rem;
+            }
+            
+            #nextBtn, #prevBtn {
+                padding: 0.75rem 1.5rem;
+                font-size: 10px;
+            }
+            
+            .fixed.bottom-12 {
+                bottom: 1rem;
+                padding: 0 1rem;
+            }
+            
+            .mt-16 {
+                margin-top: 2rem !important;
+            }
+            
+            .mt-16 button {
+                padding: 0.75rem 1.5rem;
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .input-focus {
+                font-size: 1.2rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem !important;
+            }
+            
+            .choice-card {
+                padding: 0.75rem;
+                font-size: 0.65rem;
+            }
+            
+            .grid-cols-2 {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .mt-16 {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .mt-16 button {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -114,8 +203,20 @@
             <input type="text" name="prev_address" placeholder="Full Address..." class="input-focus !text-2xl" autocomplete="off">
         </div>
 
-        <div class="step-container" id="step-3">
-            <span class="text-blue-500 font-mono text-xs tracking-[0.5em] mb-4">04 // DESIGNATION</span>
+        <div class="step-container" id="step-3a">
+            <span class="text-blue-500 font-mono text-xs tracking-[0.5em] mb-4">04 // INDUSTRY</span>
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-12 text-center">Type of Company</h1>
+            <input type="text" name="type_of_company" placeholder="e.g., IT Services, Manufacturing..." class="input-focus !text-2xl" autocomplete="off">
+        </div>
+
+        <div class="step-container" id="step-3b">
+            <span class="text-blue-500 font-mono text-xs tracking-[0.5em] mb-4">05 // BUSINESS</span>
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-12 text-center">Nature of Business</h1>
+            <input type="text" name="nature_of_business" placeholder="e.g., Software Development, Consulting..." class="input-focus !text-2xl" autocomplete="off">
+        </div>
+
+        <div class="step-container" id="step-4">
+            <span class="text-blue-500 font-mono text-xs tracking-[0.5em] mb-4">06 // DESIGNATION</span>
             <h1 class="text-3xl md:text-4xl font-extrabold mb-8 text-center">Professional Position</h1>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-5 w-full custom-scroll overflow-y-auto max-h-[50vh] p-4 pr-6">
                 <?php
@@ -139,8 +240,8 @@
             </div>
         </div>
 
-        <div class="step-container" id="step-4">
-            <span class="text-blue-500 font-mono text-xs tracking-[0.5em] mb-4">05 // TIMELINE</span>
+        <div class="step-container" id="step-5">
+            <span class="text-blue-500 font-mono text-xs tracking-[0.5em] mb-4">07 // TIMELINE</span>
             <h1 class="text-4xl md:text-5xl font-extrabold mb-12 text-center">Inclusive Years</h1>
             <div class="date-grid">
                 <div class="flex flex-col">
@@ -154,8 +255,8 @@
             </div>
         </div>
 
-        <div class="step-container" id="step-5">
-            <span class="text-blue-500 font-mono text-xs tracking-[0.5em] mb-4">06 // STATUS</span>
+        <div class="step-container" id="step-6">
+            <span class="text-blue-500 font-mono text-xs tracking-[0.5em] mb-4">08 // STATUS</span>
             <h1 class="text-4xl md:text-5xl font-extrabold mb-12 text-center">Employment Status</h1>
             <div class="grid grid-cols-1 md:grid-cols-5 gap-6 w-full px-4">
                 <?php
@@ -222,16 +323,63 @@
         nextBtn.addEventListener('click', () => { if(current < steps.length - 1) { current++; updateUI(); } });
         prevBtn.addEventListener('click', () => { if(current > 0) { current--; updateUI(); } });
 
+        let previousExperiences = [];
+
         function saveAndAddMore() {
+            const formData = new FormData(document.getElementById('previousExpForm'));
+            const data = Object.fromEntries(formData.entries());
+            
+            // Add current experience to array
+            previousExperiences.push({
+                employment_type: 'Previous',
+                company_name: data.prev_company || '',
+                nature_of_business: data.nature_of_business || '',
+                position: data.position || data.other_position || '',
+                job_description: data.job_desc || '',
+                company_address: data.prev_address || '',
+                type_of_company: data.type_of_company || '',
+                date_from: data.prev_from || null,
+                date_to: data.prev_to || null,
+                employment_status: data.emp_status || ''
+            });
+            
             alert("Entry Saved. Let's add another.");
-            window.location.reload(); 
+            document.getElementById('previousExpForm').reset();
+            current = 0;
+            updateUI();
         }
 
         function finishAndSubmit() {
-            window.location.href = "success_page.php";
+            // Save current form if filled
+            const formData = new FormData(document.getElementById('previousExpForm'));
+            const data = Object.fromEntries(formData.entries());
+            
+            if (data.prev_company && data.prev_company.trim() !== '') {
+                previousExperiences.push({
+                    employment_type: 'Previous',
+                    company_name: data.prev_company || '',
+                    nature_of_business: data.nature_of_business || '',
+                    position: data.position || data.other_position || '',
+                    job_description: data.job_desc || '',
+                    company_address: data.prev_address || '',
+                    type_of_company: data.type_of_company || '',
+                    date_from: data.prev_from || null,
+                    date_to: data.prev_to || null,
+                    employment_status: data.emp_status || ''
+                });
+            }
+            
+            // Save to localStorage
+            let tracerData = JSON.parse(localStorage.getItem('tracer_payload')) || {};
+            tracerData.previous_experiences = previousExperiences;
+            localStorage.setItem('tracer_payload', JSON.stringify(tracerData));
+            
+            window.location.href = "final_submit.php";
         }
 
         updateUI();
     </script>
+
+    <?php include 'includes/theme_toggle.php'; ?>
 </body>
 </html>
