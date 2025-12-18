@@ -6,6 +6,8 @@ header('Content-Type: application/json');
 
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
+$isAjax = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
+
 try {
     switch ($action) {
         case 'create':
@@ -66,7 +68,12 @@ try {
             // Delete unemployment record
             $stmt = $pdo->prepare("DELETE FROM unemployed_details WHERE unemployed_id = :unemployed_id");
             $stmt->execute([':unemployed_id' => $_POST['unemployed_id']]);
-            
+
+            if ($isAjax) {
+                echo json_encode(['success' => true, 'message' => 'Unemployment record deleted successfully!']);
+                exit();
+            }
+
             $_SESSION['success_message'] = 'Unemployment record deleted successfully!';
             header("Location: ../unemployed.php");
             exit();
@@ -95,7 +102,12 @@ try {
     
 } catch (PDOException $e) {
     error_log("CRUD Error: " . $e->getMessage());
-    
+
+    if ($isAjax) {
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        exit();
+    }
+
     if (in_array($action, ['create', 'update', 'delete'])) {
         $_SESSION['error_message'] = 'Database error: ' . $e->getMessage();
         header("Location: ../unemployed.php");

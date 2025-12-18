@@ -292,6 +292,48 @@ try {
             margin-bottom: 1rem;
             display: block;
         }
+
+        .delete-modal-content {
+            max-width: 420px;
+            text-align: center;
+        }
+
+        .delete-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-icon.danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+
+        .delete-icon.success {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+        }
+
+        .delete-modal-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .delete-modal-actions .btn {
+            flex: 1;
+        }
+
+        .delete-error {
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-top: 0.75rem;
+            min-height: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -319,14 +361,14 @@ try {
             <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); color: #22c55e; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem;">
                 <i class="fas fa-check-circle"></i> <?php echo htmlspecialchars($_SESSION['success_message']); ?>
             </div>
-            <?php unset($_SESSION['success_message']); ?>
+            <?php if (isset($_GET['limit'])) unset($_SESSION['success_message']); ?>
         <?php endif; ?>
 
         <?php if (isset($_SESSION['error_message'])): ?>
             <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem;">
                 <i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($_SESSION['error_message']); ?>
             </div>
-            <?php unset($_SESSION['error_message']); ?>
+            <?php if (isset($_GET['limit'])) unset($_SESSION['error_message']); ?>
         <?php endif; ?>
 
         <?php if (empty($available_graduates)): ?>
@@ -524,6 +566,34 @@ try {
         </div>
     </div>
 
+    <div id="deleteConfirmModal" class="modal">
+        <div class="modal-content delete-modal-content">
+            <div class="delete-icon danger">
+                <i class="fas fa-trash" style="font-size: 1.5rem;"></i>
+            </div>
+            <h2 class="modal-title" style="margin-bottom: 0.5rem;">Confirm Delete</h2>
+            <p id="deleteConfirmMessage" style="color: var(--text-muted); margin: 0;"></p>
+            <div id="deleteConfirmError" class="delete-error"></div>
+            <div class="delete-modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteConfirmModal()">Cancel</button>
+                <button type="button" id="deleteConfirmBtn" class="btn btn-danger" onclick="confirmDeleteUnemployment()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteSuccessModal" class="modal">
+        <div class="modal-content delete-modal-content">
+            <div class="delete-icon success">
+                <i class="fas fa-check" style="font-size: 1.5rem;"></i>
+            </div>
+            <h2 class="modal-title" style="margin-bottom: 0.5rem;">Deleted</h2>
+            <p id="deleteSuccessMessage" style="color: var(--text-muted); margin: 0;">Record deleted successfully.</p>
+            <div class="delete-modal-actions">
+                <button type="button" class="btn btn-primary" onclick="closeDeleteSuccessModal(true)">OK</button>
+            </div>
+        </div>
+    </div>
+
     <style>
         .btn-info { background: #0ea5e9; color: white; }
         .btn-info:hover { background: #0284c7; }
@@ -541,12 +611,14 @@ try {
     </style>
 
     <script>
+        let _unemployedDeleteTarget = null;
+
         function openAddModal() {
             <?php if (empty($available_graduates)): ?>
                 alert('No available graduates to add. Please add more graduates first.');
                 return;
             <?php endif; ?>
-            
+
             document.getElementById('modalTitle').textContent = 'Add Unemployment Record';
             document.getElementById('formAction').value = 'create';
             document.getElementById('unemploymentForm').reset();
@@ -565,19 +637,17 @@ try {
                         document.getElementById('modalTitle').textContent = 'Edit Unemployment Record';
                         document.getElementById('formAction').value = 'update';
                         document.getElementById('unemployedId').value = data.unemployment.unemployed_id;
-                        
-                        // For editing, we need to populate the dropdown with all graduates including the current one
+
                         const graduateSelect = document.getElementById('graduateId');
                         graduateSelect.innerHTML = '<option value="">Select Graduate</option>';
-                        
+
                         <?php 
-                        // Combine all graduates for editing
                         $all_graduates_for_edit = array_merge($available_graduates, $unemployed);
                         usort($all_graduates_for_edit, function($a, $b) {
                             return strcmp($a['last_name'], $b['last_name']);
                         });
                         ?>
-                        
+
                         <?php foreach ($all_graduates_for_edit as $grad): ?>
                             const option<?php echo $grad['graduate_id']; ?> = document.createElement('option');
                             option<?php echo $grad['graduate_id']; ?>.value = '<?php echo $grad['graduate_id']; ?>';
@@ -592,7 +662,7 @@ try {
                             }
                             graduateSelect.appendChild(option<?php echo $grad['graduate_id']; ?>);
                         <?php endforeach; ?>
-                        
+
                         document.getElementById('hasPreviousExperience').checked = data.unemployment.has_previous_experience == 1;
                         document.getElementById('unemploymentModal').classList.add('active');
                     } else {
@@ -603,28 +673,71 @@ try {
         }
 
         function deleteUnemployment(id, name) {
-            if (confirm(`Are you sure you want to delete the unemployment record for ${name}?`)) {
-                fetch('./functions/unemployed_crud.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `action=delete&unemployed_id=${id}`
-                })
-                .then(res => res.text())
-                .then(() => {
-                    window.location.reload();
-                })
-                .catch(err => alert('Error: ' + err));
-            }
+            _unemployedDeleteTarget = { id, name };
+            openDeleteConfirmModal(`Are you sure you want to delete the unemployment record for ${name}? This action cannot be undone.`);
         }
 
-        // Close modal on outside click
+        function openDeleteConfirmModal(message) {
+            document.getElementById('deleteConfirmMessage').textContent = message;
+            document.getElementById('deleteConfirmError').textContent = '';
+            const btn = document.getElementById('deleteConfirmBtn');
+            btn.disabled = false;
+            btn.innerHTML = 'Delete';
+            document.getElementById('deleteConfirmModal').classList.add('active');
+        }
+
+        function closeDeleteConfirmModal() {
+            document.getElementById('deleteConfirmModal').classList.remove('active');
+            _unemployedDeleteTarget = null;
+        }
+
+        function openDeleteSuccessModal(message) {
+            document.getElementById('deleteSuccessMessage').textContent = message || 'Record deleted successfully.';
+            document.getElementById('deleteSuccessModal').classList.add('active');
+        }
+
+        function closeDeleteSuccessModal(reload) {
+            document.getElementById('deleteSuccessModal').classList.remove('active');
+            if (reload) window.location.reload();
+        }
+
+        function confirmDeleteUnemployment() {
+            if (!_unemployedDeleteTarget) return;
+
+            const btn = document.getElementById('deleteConfirmBtn');
+            btn.disabled = true;
+            btn.innerHTML = 'Deleting...';
+
+            fetch('./functions/unemployed_crud.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: `action=delete&unemployed_id=${encodeURIComponent(_unemployedDeleteTarget.id)}`
+            })
+            .then(async (res) => {
+                const data = await res.json().catch(() => null);
+                if (!data || data.success !== true) {
+                    const msg = (data && data.message) ? data.message : 'Failed to delete record.';
+                    throw new Error(msg);
+                }
+                closeDeleteConfirmModal();
+                openDeleteSuccessModal(data.message || 'Unemployment record deleted successfully!');
+            })
+            .catch(err => {
+                document.getElementById('deleteConfirmError').textContent = err && err.message ? err.message : 'Error deleting record.';
+                btn.disabled = false;
+                btn.innerHTML = 'Delete';
+            });
+        }
+
         document.getElementById('unemploymentModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeModal();
             }
         });
 
-        // View Previous Experience
         function viewPrevExp(graduateId) {
             fetch('./functions/get_prev_exp.php?graduate_id=' + graduateId)
                 .then(res => res.json())
@@ -655,18 +768,24 @@ try {
             if (e.target === this) closePrevExpModal();
         });
 
-        // Mobile Sidebar Toggle
+        document.getElementById('deleteConfirmModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDeleteConfirmModal();
+        });
+
+        document.getElementById('deleteSuccessModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDeleteSuccessModal(true);
+        });
+
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('open');
             document.querySelector('.sidebar-overlay').classList.toggle('open');
         }
 
-        // Responsive Pagination - detect screen size and reload if needed
         (function() {
             const isMobile = window.innerWidth <= 768;
             const currentLimit = new URLSearchParams(window.location.search).get('limit');
             const targetLimit = isMobile ? 5 : 10;
-            
+
             if (currentLimit === null || parseInt(currentLimit) !== targetLimit) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('limit', targetLimit);

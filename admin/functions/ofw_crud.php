@@ -87,9 +87,15 @@ try {
             $stmt = $pdo->prepare("DELETE FROM ofw_details WHERE ofw_id = :ofw_id");
             $stmt->execute([':ofw_id' => $_POST['ofw_id']]);
             
-            $_SESSION['success_message'] = 'OFW record deleted successfully!';
-            header("Location: ../ofw.php");
-            exit();
+            // Check if this is an AJAX request
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+                echo json_encode(['success' => true, 'message' => 'OFW record deleted successfully!']);
+                exit();
+            } else {
+                $_SESSION['success_message'] = 'OFW record deleted successfully!';
+                header("Location: ../ofw.php");
+                exit();
+            }
             
         case 'get':
             // Get single OFW record for editing

@@ -6,6 +6,8 @@ header('Content-Type: application/json');
 
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
+$isAjax = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
+
 try {
     switch ($action) {
         case 'create':
@@ -101,7 +103,12 @@ try {
             $stmt->execute([':graduate_id' => $_POST['graduate_id']]);
             
             $pdo->commit();
-            
+
+            if ($isAjax) {
+                echo json_encode(['success' => true, 'message' => 'Graduate deleted successfully!']);
+                exit();
+            }
+
             $_SESSION['success_message'] = 'Graduate deleted successfully!';
             header("Location: ../graduates.php");
             exit();
@@ -136,7 +143,12 @@ try {
     }
     
     error_log("CRUD Error: " . $e->getMessage());
-    
+
+    if ($isAjax) {
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        exit();
+    }
+
     if (in_array($action, ['create', 'update', 'delete'])) {
         $_SESSION['error_message'] = 'Database error: ' . $e->getMessage();
         header("Location: ../graduates.php");
