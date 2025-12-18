@@ -19,7 +19,7 @@
             background-color: #000;
             color: #fff;
             font-family: 'Inter', sans-serif;
-            overflow: hidden; /* Keeps the experience contained */
+            overflow: hidden;
         }
 
         /* Ambient Background Glow */
@@ -42,6 +42,21 @@
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 24px;
+        }
+
+        /* Nav Login Button & Premium Animation */
+        .nav-login {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .nav-login:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px var(--accent-glow);
+            color: white !important;
         }
 
         /* Modern Cursor */
@@ -76,10 +91,9 @@
             transform: scale(1.05) translateY(-3px);
             background: var(--accent);
             color: #fff;
-            box-shadow: 0 15px 40px rgba(58, 130, 246, 0.4);
+            box-shadow: 0 15px 40px var(--accent-glow);
         }
 
-        /* Subtle Grid Overlay */
         .grid-overlay {
             position: fixed;
             inset: 0;
@@ -90,78 +104,94 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-6">
+<body class="min-h-screen flex flex-col items-center p-6">
 
     <div class="bg-glow"></div>
     <div class="grid-overlay"></div>
 
-    <main class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+    <div class="w-full max-w-5xl space-y-12">
         
-        <div class="lg:col-span-7 space-y-8 text-left">
-            <div class="space-y-2">
-                <span class="text-accent font-mono text-xs tracking-[0.5em] uppercase">College of Information Technology</span>
-                <h1 class="text-6xl md:text-7xl font-black tracking-tighter leading-none">
-                    BSIT <br>
-                    <span class="text-accent">TRACER.</span>
-                </h1>
+        <header class="flex justify-between items-end w-full">
+            <div>
+
             </div>
+            <a href="../admin/login.php"
+               class="nav-login px-6 py-2 rounded-full text-[10px] font-bold tracking-[0.2em] text-white uppercase flex items-center gap-2">
+                <i class="fas fa-lock text-[9px]"></i>
+                Admin Login
+            </a>
 
-            <div class="glass-panel p-6 inline-flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center text-accent">
-                    <i class="fas fa-terminal"></i>
-                </div>
-                <div class="text-sm">
-                    <span class="text-gray-500 block font-mono text-[10px] uppercase tracking-widest">System Status</span>
-                    <span id="dynamic-text" class="text-white font-medium">Initializing...</span><span class="cursor"></span>
-                </div>
-            </div>
+        </header>
 
-            <p class="text-gray-400 text-lg max-w-md leading-relaxed">
-                Your career journey helps shape the future of our curriculum. Securely synchronize your employment data in 3 minutes.
-            </p>
-
-            <form action="validation.php" method="POST" class="pt-4">
-                <button type="submit" class="btn-premium px-12 py-5 rounded-full text-sm font-black tracking-widest uppercase flex items-center gap-4">
-                    Begin Survey <i class="fas fa-chevron-right text-[10px]"></i>
-                </button>
-            </form>
-        </div>
-
-        <div class="lg:col-span-5 grid grid-cols-2 gap-4 relative">
-            <div class="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-accent/20 rounded-full"></div>
+        <main class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
-            <div class="glass-panel p-6 space-y-4 float-icon" style="animation-delay: 0s;">
-                <i class="fas fa-shield-halved text-accent text-2xl"></i>
-                <h3 class="text-white font-bold text-sm">Secure</h3>
-                <p class="text-gray-500 text-[11px]">DPA 2012 Compliant data encryption.</p>
+            <div class="lg:col-span-7 space-y-8 text-left">
+                <div class="space-y-2">
+                    <span class="text-accent font-mono text-xs tracking-[0.5em] uppercase">College of Information Technology</span>
+                    <h1 class="text-6xl md:text-7xl font-black tracking-tighter leading-none">
+                        BSIT <br>
+                        <span class="text-accent">TRACER.</span>
+                    </h1>
+                </div>
+
+                <div class="glass-panel p-6 inline-flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center text-accent">
+                        <i class="fas fa-terminal"></i>
+                    </div>
+                    <div class="text-sm">
+                        <span class="text-gray-500 block font-mono text-[10px] uppercase tracking-widest">System Status</span>
+                        <span id="dynamic-text" class="text-white font-medium">Initializing...</span><span class="cursor"></span>
+                    </div>
+                </div>
+
+                <p class="text-gray-400 text-lg max-w-md leading-relaxed">
+                    Your career journey helps shape the future of our curriculum. Securely synchronize your employment data in 3 minutes.
+                </p>
+
+                <form action="validation.php" method="POST" class="pt-4">
+                    <button type="submit" class="btn-premium px-12 py-5 rounded-full text-sm font-black tracking-widest uppercase flex items-center gap-4">
+                        Begin Survey <i class="fas fa-chevron-right text-[10px]"></i>
+                    </button>
+                </form>
             </div>
 
-            <div class="glass-panel p-6 space-y-4 translate-y-8 float-icon" style="animation-delay: 0.5s;">
-                <i class="fas fa-chart-line text-accent text-2xl"></i>
-                <h3 class="text-white font-bold text-sm">Impact</h3>
-                <p class="text-gray-500 text-[11px]">Align subjects with industry needs.</p>
-            </div>
+            <div class="lg:col-span-5 grid grid-cols-2 gap-4 relative">
+                <div class="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-accent/20 rounded-full"></div>
+                
+                <div class="glass-panel p-6 space-y-4 float-icon" style="animation-delay: 0s;">
+                    <i class="fas fa-shield-halved text-accent text-2xl"></i>
+                    <h3 class="text-white font-bold text-sm">Secure</h3>
+                    <p class="text-gray-500 text-[11px]">DPA 2012 Compliant encryption.</p>
+                </div>
 
-            <div class="glass-panel p-6 space-y-4 float-icon" style="animation-delay: 0.2s;">
-                <i class="fas fa-bolt text-accent text-2xl"></i>
-                <h3 class="text-white font-bold text-sm">Fast</h3>
-                <p class="text-gray-500 text-[11px]">Optimized 3-minute workflow.</p>
-            </div>
+                <div class="glass-panel p-6 space-y-4 translate-y-8 float-icon" style="animation-delay: 0.5s;">
+                    <i class="fas fa-chart-line text-accent text-2xl"></i>
+                    <h3 class="text-white font-bold text-sm">Impact</h3>
+                    <p class="text-gray-500 text-[11px]">Directly influence IT curriculum.</p>
+                </div>
 
-            <div class="glass-panel p-6 space-y-4 translate-y-8 float-icon" style="animation-delay: 0.7s;">
-                <i class="fas fa-university text-accent text-2xl"></i>
-                <h3 class="text-white font-bold text-sm">Accredited</h3>
-                <p class="text-gray-500 text-[11px]">Supporting quality assurance.</p>
+                <div class="glass-panel p-6 space-y-4 float-icon" style="animation-delay: 0.2s;">
+                    <i class="fas fa-bolt text-accent text-2xl"></i>
+                    <h3 class="text-white font-bold text-sm">Fast</h3>
+                    <p class="text-gray-500 text-[11px]">Quick 3-minute workflow.</p>
+                </div>
+
+                <div class="glass-panel p-6 space-y-4 translate-y-8 float-icon" style="animation-delay: 0.7s;">
+                    <i class="fas fa-university text-accent text-2xl"></i>
+                    <h3 class="text-white font-bold text-sm">Accredited</h3>
+                    <p class="text-gray-500 text-[11px]">CHED QA standards support.</p>
+                </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <footer class="fixed bottom-8 w-full px-12 flex justify-between items-end">
         <div class="text-[10px] font-mono text-gray-600 uppercase tracking-[0.3em]">
             &copy; SBSITGraduatesTracer 2025
         </div>
-        <div class="flex gap-6 text-gray-500 text-xs">
+        <div class="flex gap-6 text-gray-500 text-xs font-bold uppercase tracking-widest">
             <a href="#" class="hover:text-accent transition-colors">Privacy</a>
+            <span class="text-gray-800">/</span>
             <a href="#" class="hover:text-accent transition-colors">Terms</a>
         </div>
     </footer>

@@ -9,16 +9,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
 
-        :root {
-            --color-bg: #000000;
-            --color-card: #0a0a0a;
-            --color-border: #1a1a1a;
-            --accent-blue: #3a82f6;
-            --accent-yellow: #eab308;
-            --accent-purple: #a855f7;
-            --accent-red: #ef4444;
-        }
-
         body {
             background-color: var(--color-bg);
             color: #fff;
