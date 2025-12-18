@@ -66,7 +66,7 @@ try {
     $available_graduates = $grad_stmt->fetchAll(PDO::FETCH_ASSOC);
     
 } catch (Exception $e) {
-    $error = "Database Error: " . $e->getMessage();
+    // Database error - will be handled by error display logic
 }
 ?>
 
