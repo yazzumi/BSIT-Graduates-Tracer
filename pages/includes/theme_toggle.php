@@ -9,25 +9,25 @@
 <style>
     /* Theme Toggle Switch */
     .theme-switch-container {
-        position: fixed;
+        position: absolute;
         top: 1rem;
         right: 1rem;
         z-index: 1000;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.25rem;
         background: rgba(10, 10, 10, 0.8);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 50px;
-        padding: 0.5rem 1rem;
+        padding: 0.35rem 0.6rem;
         backdrop-filter: blur(10px);
     }
 
 
     .theme-switch {
         position: relative;
-        width: 44px;
-        height: 24px;
+        width: 32px;
+        height: 18px;
     }
 
     .theme-switch input {
@@ -51,10 +51,10 @@
     .slider:before {
         position: absolute;
         content: "";
-        height: 18px;
-        width: 18px;
-        left: 3px;
-        bottom: 3px;
+        height: 14px;
+        width: 14px;
+        left: 2px;
+        bottom: 2px;
         background-color: white;
         transition: 0.3s;
         border-radius: 50%;
@@ -65,7 +65,7 @@
     }
 
     input:checked + .slider:before {
-        transform: translateX(20px);
+        transform: translateX(14px);
     }
 
     [data-theme="light"] .theme-switch-container {

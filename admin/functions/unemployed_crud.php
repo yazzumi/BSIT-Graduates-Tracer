@@ -1,6 +1,6 @@
 <?php
-require_once "includes/auth_check.php";
-require_once "../config/db_conn.php";
+require_once __DIR__ . "/../includes/auth_check.php";
+require_once __DIR__ . "/../../config/db_conn.php";
 
 header('Content-Type: application/json');
 
@@ -32,7 +32,7 @@ try {
             $update_stmt->execute([':graduate_id' => $_POST['graduate_id']]);
             
             $_SESSION['success_message'] = 'Unemployment record added successfully!';
-            header("Location: unemployed.php");
+            header("Location: ../unemployed.php");
             exit();
             
         case 'update':
@@ -59,7 +59,7 @@ try {
             $update_stmt->execute([':graduate_id' => $_POST['graduate_id']]);
             
             $_SESSION['success_message'] = 'Unemployment record updated successfully!';
-            header("Location: unemployed.php");
+            header("Location: ../unemployed.php");
             exit();
             
         case 'delete':
@@ -68,7 +68,7 @@ try {
             $stmt->execute([':unemployed_id' => $_POST['unemployed_id']]);
             
             $_SESSION['success_message'] = 'Unemployment record deleted successfully!';
-            header("Location: unemployed.php");
+            header("Location: ../unemployed.php");
             exit();
             
         case 'get':
@@ -98,7 +98,7 @@ try {
     
     if (in_array($action, ['create', 'update', 'delete'])) {
         $_SESSION['error_message'] = 'Database error: ' . $e->getMessage();
-        header("Location: unemployed.php");
+        header("Location: ../unemployed.php");
         exit();
     } else {
         echo json_encode(['success' => false, 'message' => $e->getMessage()]);

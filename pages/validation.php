@@ -64,6 +64,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['full_name'])) {
     <style>
         body { background-color: #000; color: #808080; font-family: 'Inter', sans-serif; overflow: hidden; }
         .glass-input { background: #0a0a0a; border: 1px solid #1a1a1a; color: white; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glass-input option { background: #0a0a0a; color: white; }
+        select.glass-input { background: #0a0a0a; color: white; }
         .glass-input:focus { border-color: var(--accent); background: linear-gradient(135deg, #0f0f0f, rgba(58, 130, 246, 0.08)); outline: none; transform: scale(1.02); box-shadow: 0 0 25px rgba(58, 130, 246, 0.4), inset 0 0 15px rgba(58, 130, 246, 0.08); }
         .glass-input::placeholder { color: #666; }
         .glass-input:focus::placeholder { color: #888; }
@@ -163,6 +165,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['full_name'])) {
         [data-theme="light"] .glass-input {
             background: #ffffff !important;
             border-color: #e2e8f0 !important;
+            color: #0f172a !important;
+        }
+
+        [data-theme="light"] .glass-input option {
+            background: #ffffff !important;
+            color: #0f172a !important;
+        }
+
+        [data-theme="light"] select.glass-input {
+            background: #ffffff !important;
             color: #0f172a !important;
         }
 

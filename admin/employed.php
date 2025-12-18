@@ -392,6 +392,14 @@ try {
                                     </td>
                                     <td>
                                         <div class="actions">
+                                            <button class="btn btn-primary btn-sm" onclick="viewEmployedDetails(<?php echo htmlspecialchars(json_encode($emp)); ?>)" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <?php if ($emp['has_previous_experience']): ?>
+                                            <button class="btn btn-info btn-sm" onclick="viewPrevExp(<?php echo $emp['graduate_id']; ?>)" title="View Previous Experience">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                            <?php endif; ?>
                                             <button class="btn btn-secondary btn-sm" onclick="editEmployment(<?php echo $emp['employment_id']; ?>)">
                                                 <i class="fas fa-edit"></i>
                                             </button>
@@ -439,7 +447,7 @@ try {
                 <h2 class="modal-title" id="modalTitle">Add Employment</h2>
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
-            <form id="employmentForm" method="POST" action="employed_crud.php">
+            <form id="employmentForm" method="POST" action="./functions/employed_crud.php">
                 <input type="hidden" name="action" id="formAction" value="create">
                 <input type="hidden" name="employment_id" id="employmentId">
                 
@@ -540,6 +548,104 @@ try {
         </div>
     </div>
 
+    <!-- Previous Experience Modal -->
+    <div id="prevExpModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Previous Work Experience</h2>
+                <button class="close-btn" onclick="closePrevExpModal()">&times;</button>
+            </div>
+            <div id="prevExpContent" style="max-height: 500px; overflow-y: auto; padding: 1rem;">
+                <!-- Content loaded via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Employed Details Modal -->
+    <div id="employedDetailsModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-briefcase" style="color: var(--accent);"></i> Employment Details</h2>
+                <button class="close-btn" onclick="closeEmployedDetailsModal()">&times;</button>
+            </div>
+            <div id="employedDetailsContent" style="max-height: 600px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <style>
+        .btn-info {
+            background: #0ea5e9;
+            color: white;
+        }
+        .btn-info:hover {
+            background: #0284c7;
+        }
+        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .details-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+        .details-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .details-item { margin-bottom: 0.75rem; }
+        .details-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.25rem; }
+        .details-value { font-size: 0.95rem; font-weight: 500; }
+        .details-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-status { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .badge-type { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .badge-prev-yes { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .badge-prev-no { background: rgba(107, 114, 128, 0.2); color: #6b7280; }
+        [data-theme="light"] .details-section { background: #ffffff; border-color: #e2e8f0; }
+        .prev-exp-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        .prev-exp-header {
+            background: rgba(58, 130, 246, 0.1);
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .prev-exp-num {
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .prev-exp-type {
+            font-size: 0.75rem;
+            background: var(--accent);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+        }
+        .prev-exp-body {
+            padding: 1rem;
+        }
+        .prev-exp-row {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+        .prev-exp-row:last-child {
+            border-bottom: none;
+        }
+        .prev-exp-row strong {
+            color: var(--text-muted);
+            display: inline-block;
+            min-width: 140px;
+        }
+        [data-theme="light"] .prev-exp-card {
+            background: #ffffff;
+            border-color: #e2e8f0;
+        }
+        [data-theme="light"] .prev-exp-header {
+            background: rgba(37, 99, 235, 0.05);
+        }
+        [data-theme="light"] .prev-exp-row {
+            border-color: #e2e8f0;
+        }
+    </style>
+
     <script>
         function openAddModal() {
             document.getElementById('modalTitle').textContent = 'Add Employment';
@@ -552,8 +658,99 @@ try {
             document.getElementById('employmentModal').classList.remove('active');
         }
 
+        function closeEmployedDetailsModal() {
+            document.getElementById('employedDetailsModal').style.display = 'none';
+        }
+
+        function viewEmployedDetails(emp) {
+            const fullName = [emp.first_name, emp.middle_name, emp.last_name].filter(Boolean).join(' ') || 'Unknown';
+            const dateFrom = emp.date_from ? new Date(emp.date_from).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'N/A';
+            const dateTo = emp.date_to ? new Date(emp.date_to).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'Present';
+            const hasPrevExp = emp.has_previous_experience == 1;
+            
+            const html = `
+                <div class="details-section">
+                    <div class="details-section-title"><i class="fas fa-user"></i> Graduate Information</div>
+                    <div class="details-grid">
+                        <div class="details-item">
+                            <div class="details-label">Full Name</div>
+                            <div class="details-value">${fullName}</div>
+                        </div>
+                        <div class="details-item">
+                            <div class="details-label">Graduate ID</div>
+                            <div class="details-value">#${emp.graduate_id || 'N/A'}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="details-section">
+                    <div class="details-section-title"><i class="fas fa-briefcase"></i> Employment Details</div>
+                    <div class="details-grid">
+                        <div class="details-item">
+                            <div class="details-label">Employment Type</div>
+                            <div class="details-value"><span class="details-badge badge-type">${emp.employment_type || 'Current'}</span></div>
+                        </div>
+                        <div class="details-item">
+                            <div class="details-label">Employment Status</div>
+                            <div class="details-value"><span class="details-badge badge-status">${emp.employment_status || 'N/A'}</span></div>
+                        </div>
+                        <div class="details-item">
+                            <div class="details-label">Position</div>
+                            <div class="details-value">${emp.position || 'N/A'}</div>
+                        </div>
+                        <div class="details-item">
+                            <div class="details-label">Duration</div>
+                            <div class="details-value">${dateFrom} - ${dateTo}</div>
+                        </div>
+                    </div>
+                    <div class="details-item" style="margin-top: 0.5rem;">
+                        <div class="details-label">Job Description</div>
+                        <div class="details-value">${emp.job_description || 'N/A'}</div>
+                    </div>
+                </div>
+                
+                <div class="details-section">
+                    <div class="details-section-title"><i class="fas fa-building"></i> Company Information</div>
+                    <div class="details-grid">
+                        <div class="details-item">
+                            <div class="details-label">Company Name</div>
+                            <div class="details-value">${emp.company_name || 'N/A'}</div>
+                        </div>
+                        <div class="details-item">
+                            <div class="details-label">Type of Company</div>
+                            <div class="details-value">${emp.type_of_company || 'N/A'}</div>
+                        </div>
+                    </div>
+                    <div class="details-item" style="margin-top: 0.5rem;">
+                        <div class="details-label">Company Address</div>
+                        <div class="details-value">${emp.company_address || 'N/A'}</div>
+                    </div>
+                </div>
+                
+                <div class="details-section">
+                    <div class="details-section-title"><i class="fas fa-history"></i> Previous Experience</div>
+                    <div class="details-item">
+                        <div class="details-label">Has Previous Work Experience</div>
+                        <div class="details-value">
+                            <span class="details-badge ${hasPrevExp ? 'badge-prev-yes' : 'badge-prev-no'}">
+                                ${hasPrevExp ? 'Yes' : 'No'}
+                            </span>
+                            ${hasPrevExp ? '<button class="btn btn-info btn-sm" style="margin-left: 1rem;" onclick="closeEmployedDetailsModal(); viewPrevExp(' + emp.graduate_id + ')"><i class="fas fa-eye"></i> View Previous Jobs</button>' : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('employedDetailsContent').innerHTML = html;
+            document.getElementById('employedDetailsModal').style.display = 'flex';
+        }
+
+        document.getElementById('employedDetailsModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEmployedDetailsModal();
+        });
+
         function editEmployment(id) {
-            fetch(`employed_crud.php?action=get&id=${id}`)
+            fetch(`./functions/employed_crud.php?action=get&id=${id}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -581,31 +778,86 @@ try {
 
         function deleteEmployment(id, company) {
             if (confirm(`Are you sure you want to delete the employment record at ${company}?`)) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = 'employed_crud.php';
-                
-                const actionInput = document.createElement('input');
-                actionInput.type = 'hidden';
-                actionInput.name = 'action';
-                actionInput.value = 'delete';
-                
-                const idInput = document.createElement('input');
-                idInput.type = 'hidden';
-                idInput.name = 'employment_id';
-                idInput.value = id;
-                
-                form.appendChild(actionInput);
-                form.appendChild(idInput);
-                document.body.appendChild(form);
-                form.submit();
+                fetch('./functions/employed_crud.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `action=delete&employment_id=${id}`
+                })
+                .then(res => res.text())
+                .then(() => {
+                    window.location.reload();
+                })
+                .catch(err => alert('Error: ' + err));
             }
+        }
+
+        // View Previous Experience
+        function viewPrevExp(graduateId) {
+            fetch('./functions/get_prev_exp.php?graduate_id=' + graduateId)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        let html = '';
+                        if (data.experiences.length === 0) {
+                            html = '<p style="text-align: center; color: var(--text-muted);">No previous experience records found.</p>';
+                        } else {
+                            data.experiences.forEach((exp, index) => {
+                                html += `
+                                    <div class="prev-exp-card">
+                                        <div class="prev-exp-header">
+                                            <span class="prev-exp-num">#${index + 1}</span>
+                                            <span class="prev-exp-type">${exp.employment_type || 'N/A'}</span>
+                                        </div>
+                                        <div class="prev-exp-body">
+                                            <div class="prev-exp-row">
+                                                <strong>Company:</strong> ${exp.company_name || 'N/A'}
+                                            </div>
+                                            <div class="prev-exp-row">
+                                                <strong>Position:</strong> ${exp.position || 'N/A'}
+                                            </div>
+                                            <div class="prev-exp-row">
+                                                <strong>Nature of Business:</strong> ${exp.nature_of_business || 'N/A'}
+                                            </div>
+                                            <div class="prev-exp-row">
+                                                <strong>Job Description:</strong> ${exp.job_description || 'N/A'}
+                                            </div>
+                                            <div class="prev-exp-row">
+                                                <strong>Company Address:</strong> ${exp.company_address || 'N/A'}
+                                            </div>
+                                            <div class="prev-exp-row">
+                                                <strong>Duration:</strong> ${exp.date_from || 'N/A'} - ${exp.date_to || 'N/A'}
+                                            </div>
+                                            <div class="prev-exp-row">
+                                                <strong>Status:</strong> ${exp.employment_status || 'N/A'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                        }
+                        document.getElementById('prevExpContent').innerHTML = html;
+                        document.getElementById('prevExpModal').style.display = 'flex';
+                    } else {
+                        alert('Error loading previous experience data');
+                    }
+                })
+                .catch(err => alert('Error: ' + err));
+        }
+
+        function closePrevExpModal() {
+            document.getElementById('prevExpModal').style.display = 'none';
         }
 
         // Close modal on outside click
         document.getElementById('employmentModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeModal();
+            }
+        });
+
+        document.getElementById('prevExpModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePrevExpModal();
             }
         });
 

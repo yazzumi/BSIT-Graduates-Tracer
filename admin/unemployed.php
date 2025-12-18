@@ -418,6 +418,11 @@ try {
                                     </td>
                                     <td>
                                         <div class="actions">
+                                            <?php if ($person['has_previous_experience']): ?>
+                                            <button class="btn btn-info btn-sm" onclick="viewPrevExp(<?php echo $person['graduate_id']; ?>)" title="View Previous Experience">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                            <?php endif; ?>
                                             <button class="btn btn-secondary btn-sm" onclick="editUnemployment(<?php echo $person['unemployed_id']; ?>)">
                                                 <i class="fas fa-edit"></i>
                                             </button>
@@ -465,7 +470,7 @@ try {
                 <h2 class="modal-title" id="modalTitle">Add Unemployment Record</h2>
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
-            <form id="unemploymentForm" method="POST" action="unemployed_crud.php">
+            <form id="unemploymentForm" method="POST" action="./functions/unemployed_crud.php">
                 <input type="hidden" name="action" id="formAction" value="create">
                 <input type="hidden" name="unemployed_id" id="unemployedId">
                 
@@ -508,6 +513,33 @@ try {
         </div>
     </div>
 
+    <!-- Previous Experience Modal -->
+    <div id="prevExpModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Previous Work Experience</h2>
+                <button class="close-btn" onclick="closePrevExpModal()">&times;</button>
+            </div>
+            <div id="prevExpContent" style="max-height: 500px; overflow-y: auto; padding: 1rem;"></div>
+        </div>
+    </div>
+
+    <style>
+        .btn-info { background: #0ea5e9; color: white; }
+        .btn-info:hover { background: #0284c7; }
+        .prev-exp-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 1rem; overflow: hidden; }
+        .prev-exp-header { background: rgba(58, 130, 246, 0.1); padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .prev-exp-num { font-weight: 700; color: var(--accent); }
+        .prev-exp-type { font-size: 0.75rem; background: var(--accent); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; }
+        .prev-exp-body { padding: 1rem; }
+        .prev-exp-row { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .prev-exp-row:last-child { border-bottom: none; }
+        .prev-exp-row strong { color: var(--text-muted); display: inline-block; min-width: 140px; }
+        [data-theme="light"] .prev-exp-card { background: #ffffff; border-color: #e2e8f0; }
+        [data-theme="light"] .prev-exp-header { background: rgba(37, 99, 235, 0.05); }
+        [data-theme="light"] .prev-exp-row { border-color: #e2e8f0; }
+    </style>
+
     <script>
         function openAddModal() {
             <?php if (empty($available_graduates)): ?>
@@ -526,7 +558,7 @@ try {
         }
 
         function editUnemployment(id) {
-            fetch(`unemployed_crud.php?action=get&id=${id}`)
+            fetch(`./functions/unemployed_crud.php?action=get&id=${id}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -572,24 +604,16 @@ try {
 
         function deleteUnemployment(id, name) {
             if (confirm(`Are you sure you want to delete the unemployment record for ${name}?`)) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = 'unemployed_crud.php';
-                
-                const actionInput = document.createElement('input');
-                actionInput.type = 'hidden';
-                actionInput.name = 'action';
-                actionInput.value = 'delete';
-                
-                const idInput = document.createElement('input');
-                idInput.type = 'hidden';
-                idInput.name = 'unemployed_id';
-                idInput.value = id;
-                
-                form.appendChild(actionInput);
-                form.appendChild(idInput);
-                document.body.appendChild(form);
-                form.submit();
+                fetch('./functions/unemployed_crud.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `action=delete&unemployed_id=${id}`
+                })
+                .then(res => res.text())
+                .then(() => {
+                    window.location.reload();
+                })
+                .catch(err => alert('Error: ' + err));
             }
         }
 
@@ -598,6 +622,37 @@ try {
             if (e.target === this) {
                 closeModal();
             }
+        });
+
+        // View Previous Experience
+        function viewPrevExp(graduateId) {
+            fetch('./functions/get_prev_exp.php?graduate_id=' + graduateId)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        let html = '';
+                        if (data.experiences.length === 0) {
+                            html = '<p style="text-align: center; color: var(--text-muted);">No previous experience records found.</p>';
+                        } else {
+                            data.experiences.forEach((exp, index) => {
+                                html += `<div class="prev-exp-card"><div class="prev-exp-header"><span class="prev-exp-num">#${index + 1}</span><span class="prev-exp-type">${exp.employment_type || 'N/A'}</span></div><div class="prev-exp-body"><div class="prev-exp-row"><strong>Company:</strong> ${exp.company_name || 'N/A'}</div><div class="prev-exp-row"><strong>Position:</strong> ${exp.position || 'N/A'}</div><div class="prev-exp-row"><strong>Nature of Business:</strong> ${exp.nature_of_business || 'N/A'}</div><div class="prev-exp-row"><strong>Job Description:</strong> ${exp.job_description || 'N/A'}</div><div class="prev-exp-row"><strong>Company Address:</strong> ${exp.company_address || 'N/A'}</div><div class="prev-exp-row"><strong>Duration:</strong> ${exp.date_from || 'N/A'} - ${exp.date_to || 'N/A'}</div><div class="prev-exp-row"><strong>Status:</strong> ${exp.employment_status || 'N/A'}</div></div></div>`;
+                            });
+                        }
+                        document.getElementById('prevExpContent').innerHTML = html;
+                        document.getElementById('prevExpModal').style.display = 'flex';
+                    } else {
+                        alert('Error loading previous experience data');
+                    }
+                })
+                .catch(err => alert('Error: ' + err));
+        }
+
+        function closePrevExpModal() {
+            document.getElementById('prevExpModal').style.display = 'none';
+        }
+
+        document.getElementById('prevExpModal').addEventListener('click', function(e) {
+            if (e.target === this) closePrevExpModal();
         });
 
         // Mobile Sidebar Toggle

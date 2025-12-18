@@ -1,6 +1,6 @@
 <?php
-require_once "includes/auth_check.php";
-require_once "../config/db_conn.php";
+require_once __DIR__ . "/../includes/auth_check.php";
+require_once __DIR__ . "/../../config/db_conn.php";
 
 header('Content-Type: application/json');
 
@@ -32,7 +32,7 @@ try {
             ]);
             
             $_SESSION['success_message'] = 'Graduate added successfully!';
-            header("Location: graduates.php");
+            header("Location: ../graduates.php");
             exit();
             
         case 'update':
@@ -69,7 +69,7 @@ try {
             ]);
             
             $_SESSION['success_message'] = 'Graduate updated successfully!';
-            header("Location: graduates.php");
+            header("Location: ../graduates.php");
             exit();
             
         case 'delete':
@@ -103,7 +103,7 @@ try {
             $pdo->commit();
             
             $_SESSION['success_message'] = 'Graduate deleted successfully!';
-            header("Location: graduates.php");
+            header("Location: ../graduates.php");
             exit();
             
         case 'get':
@@ -139,7 +139,7 @@ try {
     
     if (in_array($action, ['create', 'update', 'delete'])) {
         $_SESSION['error_message'] = 'Database error: ' . $e->getMessage();
-        header("Location: graduates.php");
+        header("Location: ../graduates.php");
         exit();
     } else {
         echo json_encode(['success' => false, 'message' => $e->getMessage()]);

@@ -30,7 +30,8 @@ try {
         SELECT 
             g.graduate_id, g.first_name, g.middle_name, g.last_name, 
             g.contact_number, g.gender, g.employment_type, g.date_of_birth,
-            g.city_municipality, g.province, g.civil_status
+            g.city_municipality, g.province, g.civil_status, g.permanent_address,
+            g.barangay, g.employed_within_6_months, g.registration_date, g.last_updated
         FROM graduates g
     ";
     
@@ -360,6 +361,9 @@ try {
                                     </td>
                                     <td>
                                         <div class="actions">
+                                            <button class="btn btn-primary btn-sm" onclick="viewGraduateDetails(<?php echo htmlspecialchars(json_encode($grad)); ?>)" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
                                             <button class="btn btn-secondary btn-sm" onclick="editGraduate(<?php echo $grad['graduate_id']; ?>)">
                                                 <i class="fas fa-edit"></i>
                                             </button>
@@ -407,7 +411,7 @@ try {
                 <h2 class="modal-title" id="modalTitle">Add Graduate</h2>
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
-            <form id="graduateForm" method="POST" action="graduates_crud.php">
+            <form id="graduateForm" method="POST" action="./functions/graduates_crud.php">
                 <input type="hidden" name="action" id="formAction" value="create">
                 <input type="hidden" name="graduate_id" id="graduateId">
                 
@@ -496,6 +500,34 @@ try {
         </div>
     </div>
 
+    <!-- Graduate Details Modal -->
+    <div id="graduateDetailsModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-user-graduate" style="color: var(--accent);"></i> Graduate Details</h2>
+                <button class="close-btn" onclick="closeDetailsModal()">&times;</button>
+            </div>
+            <div id="graduateDetailsContent" style="max-height: 600px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <style>
+        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .details-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+        .details-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .details-item { margin-bottom: 0.75rem; }
+        .details-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.25rem; }
+        .details-value { font-size: 0.95rem; font-weight: 500; }
+        .details-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-employed { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .badge-unemployed { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .badge-self-employed { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+        .badge-ofw { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .badge-gender { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+        .badge-civil { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        [data-theme="light"] .details-section { background: #ffffff; border-color: #e2e8f0; }
+    </style>
+
     <script>
         function openAddModal() {
             document.getElementById('modalTitle').textContent = 'Add Graduate';
@@ -508,8 +540,106 @@ try {
             document.getElementById('graduateModal').classList.remove('active');
         }
 
+        function closeDetailsModal() {
+            document.getElementById('graduateDetailsModal').style.display = 'none';
+        }
+
+        function viewGraduateDetails(grad) {
+            const fullName = [grad.first_name, grad.middle_name, grad.last_name].filter(Boolean).join(' ') || 'Unknown';
+            const dob = grad.date_of_birth ? new Date(grad.date_of_birth).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+            const regDate = grad.registration_date ? new Date(grad.registration_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+            const empType = grad.employment_type || 'Not Set';
+            const empBadgeClass = empType.toLowerCase().replace(' ', '-');
+            const within6Months = grad.employed_within_6_months == 1 ? 'Yes' : 'No';
+            
+            const html = `
+                <div class="details-section">
+                    <div class="details-section-title"><i class="fas fa-user"></i> Personal Information</div>
+                    <div class="details-grid">
+                        <div class="details-item">
+                            <div class="details-label">Full Name</div>
+                            <div class="details-value">${fullName}</div>
+                        </div>
+                        <div class="details-item">
+                            <div class="details-label">Gender</div>
+                            <div class="details-value"><span class="details-badge badge-gender">${grad.gender || 'N/A'}</span></div>
+                        </div>
+                        <div class="details-item">
+                            <div class="details-label">Date of Birth</div>
+                            <div class="details-value">${dob}</div>
+                        </div>
+                        <div class="details-item">
+                            <div class="details-label">Civil Status</div>
+                            <div class="details-value"><span class="details-badge badge-civil">${grad.civil_status || 'N/A'}</span></div>
+                        </div>
+                        <div class="details-item">
+                            <div class="details-label">Contact Number</div>
+                            <div class="details-value">${grad.contact_number || 'N/A'}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="details-section">
+                    <div class="details-section-title"><i class="fas fa-map-marker-alt"></i> Address Information</div>
+                    <div class="details-item">
+                        <div class="details-label">Permanent Address</div>
+                        <div class="details-value">${grad.permanent_address || 'N/A'}</div>
+                    </div>
+                    <div class="details-grid">
+                        <div class="details-item">
+                            <div class="details-label">Barangay</div>
+                            <div class="details-value">${grad.barangay || 'N/A'}</div>
+                        </div>
+                        <div class="details-item">
+                            <div class="details-label">City/Municipality</div>
+                            <div class="details-value">${grad.city_municipality || 'N/A'}</div>
+                        </div>
+                        <div class="details-item">
+                            <div class="details-label">Province</div>
+                            <div class="details-value">${grad.province || 'N/A'}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="details-section">
+                    <div class="details-section-title"><i class="fas fa-briefcase"></i> Employment Information</div>
+                    <div class="details-grid">
+                        <div class="details-item">
+                            <div class="details-label">Employment Type</div>
+                            <div class="details-value"><span class="details-badge badge-${empBadgeClass}">${empType}</span></div>
+                        </div>
+                        <div class="details-item">
+                            <div class="details-label">Employed Within 6 Months</div>
+                            <div class="details-value">${within6Months}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="details-section">
+                    <div class="details-section-title"><i class="fas fa-calendar"></i> Record Information</div>
+                    <div class="details-grid">
+                        <div class="details-item">
+                            <div class="details-label">Registration Date</div>
+                            <div class="details-value">${regDate}</div>
+                        </div>
+                        <div class="details-item">
+                            <div class="details-label">Graduate ID</div>
+                            <div class="details-value">#${grad.graduate_id}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('graduateDetailsContent').innerHTML = html;
+            document.getElementById('graduateDetailsModal').style.display = 'flex';
+        }
+
+        document.getElementById('graduateDetailsModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDetailsModal();
+        });
+
         function editGraduate(id) {
-            fetch(`graduates_crud.php?action=get&id=${id}`)
+            fetch(`./functions/graduates_crud.php?action=get&id=${id}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -537,24 +667,16 @@ try {
 
         function deleteGraduate(id, name) {
             if (confirm(`Are you sure you want to delete ${name}?`)) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = 'graduates_crud.php';
-                
-                const actionInput = document.createElement('input');
-                actionInput.type = 'hidden';
-                actionInput.name = 'action';
-                actionInput.value = 'delete';
-                
-                const idInput = document.createElement('input');
-                idInput.type = 'hidden';
-                idInput.name = 'graduate_id';
-                idInput.value = id;
-                
-                form.appendChild(actionInput);
-                form.appendChild(idInput);
-                document.body.appendChild(form);
-                form.submit();
+                fetch('./functions/graduates_crud.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `action=delete&graduate_id=${id}`
+                })
+                .then(res => res.text())
+                .then(() => {
+                    window.location.reload();
+                })
+                .catch(err => alert('Error: ' + err));
             }
         }
 

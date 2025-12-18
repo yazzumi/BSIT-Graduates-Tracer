@@ -205,6 +205,14 @@ try {
                                     </td>
                                     <td>
                                         <div class="actions">
+                                            <button class="btn btn-primary btn-sm" onclick="viewSelfEmployedDetails(<?php echo htmlspecialchars(json_encode($person)); ?>)" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <?php if ($person['has_previous_experience']): ?>
+                                            <button class="btn btn-info btn-sm" onclick="viewPrevExp(<?php echo $person['graduate_id']; ?>)" title="View Previous Experience">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                            <?php endif; ?>
                                             <button class="btn btn-secondary btn-sm" onclick="editSelfEmployed(<?php echo $person['self_employment_id']; ?>)">
                                                 <i class="fas fa-edit"></i>
                                             </button>
@@ -243,7 +251,7 @@ try {
                 <h2 class="modal-title" id="modalTitle">Add Self-Employed Record</h2>
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
-            <form id="selfEmployedForm" method="POST" action="self_employed_crud.php">
+            <form id="selfEmployedForm" method="POST" action="./functions/self_employed_crud.php">
                 <input type="hidden" name="action" id="formAction" value="create">
                 <input type="hidden" name="self_employment_id" id="selfEmploymentId">
                 
@@ -300,6 +308,54 @@ try {
         </div>
     </div>
 
+    <!-- Previous Experience Modal -->
+    <div id="prevExpModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Previous Work Experience</h2>
+                <button class="close-btn" onclick="closePrevExpModal()">&times;</button>
+            </div>
+            <div id="prevExpContent" style="max-height: 500px; overflow-y: auto; padding: 1rem;"></div>
+        </div>
+    </div>
+
+    <!-- Self-Employed Details Modal -->
+    <div id="selfEmployedDetailsModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-store" style="color: var(--accent);"></i> Self-Employment Details</h2>
+                <button class="close-btn" onclick="closeSelfEmployedDetailsModal()">&times;</button>
+            </div>
+            <div id="selfEmployedDetailsContent" style="max-height: 600px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <style>
+        .btn-info { background: #0ea5e9; color: white; }
+        .btn-info:hover { background: #0284c7; }
+        .prev-exp-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 1rem; overflow: hidden; }
+        .prev-exp-header { background: rgba(58, 130, 246, 0.1); padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .prev-exp-num { font-weight: 700; color: var(--accent); }
+        .prev-exp-type { font-size: 0.75rem; background: var(--accent); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; }
+        .prev-exp-body { padding: 1rem; }
+        .prev-exp-row { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .prev-exp-row:last-child { border-bottom: none; }
+        .prev-exp-row strong { color: var(--text-muted); display: inline-block; min-width: 140px; }
+        [data-theme="light"] .prev-exp-card { background: #ffffff; border-color: #e2e8f0; }
+        [data-theme="light"] .prev-exp-header { background: rgba(37, 99, 235, 0.05); }
+        [data-theme="light"] .prev-exp-row { border-color: #e2e8f0; }
+        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .details-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+        .details-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .details-item { margin-bottom: 0.75rem; }
+        .details-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.25rem; }
+        .details-value { font-size: 0.95rem; font-weight: 500; }
+        .details-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-prev-yes { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .badge-prev-no { background: rgba(107, 114, 128, 0.2); color: #6b7280; }
+        [data-theme="light"] .details-section { background: #ffffff; border-color: #e2e8f0; }
+    </style>
+
     <script>
         function openAddModal() {
             document.getElementById('modalTitle').textContent = 'Add Self-Employed Record';
@@ -312,8 +368,77 @@ try {
             document.getElementById('selfEmployedModal').classList.remove('active');
         }
 
+        function closeSelfEmployedDetailsModal() {
+            document.getElementById('selfEmployedDetailsModal').style.display = 'none';
+        }
+
+        function viewSelfEmployedDetails(person) {
+            const fullName = [person.first_name, person.middle_name, person.last_name].filter(Boolean).join(' ') || 'Unknown';
+            const dateFrom = person.date_from ? new Date(person.date_from).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'N/A';
+            const dateTo = person.date_to ? new Date(person.date_to).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'Present';
+            const hasPrevExp = person.has_previous_experience == 1;
+            
+            const html = `
+                <div class="details-section">
+                    <div class="details-section-title"><i class="fas fa-user"></i> Graduate Information</div>
+                    <div class="details-grid">
+                        <div class="details-item">
+                            <div class="details-label">Full Name</div>
+                            <div class="details-value">${fullName}</div>
+                        </div>
+                        <div class="details-item">
+                            <div class="details-label">Graduate ID</div>
+                            <div class="details-value">#${person.graduate_id || 'N/A'}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="details-section">
+                    <div class="details-section-title"><i class="fas fa-store"></i> Business Details</div>
+                    <div class="details-item">
+                        <div class="details-label">Nature of Business</div>
+                        <div class="details-value">${person.nature_of_business || 'N/A'}</div>
+                    </div>
+                    <div class="details-item">
+                        <div class="details-label">Place of Business</div>
+                        <div class="details-value">${person.place_of_business || 'N/A'}</div>
+                    </div>
+                    <div class="details-grid">
+                        <div class="details-item">
+                            <div class="details-label">Date Started</div>
+                            <div class="details-value">${dateFrom}</div>
+                        </div>
+                        <div class="details-item">
+                            <div class="details-label">Date Ended</div>
+                            <div class="details-value">${dateTo}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="details-section">
+                    <div class="details-section-title"><i class="fas fa-history"></i> Previous Experience</div>
+                    <div class="details-item">
+                        <div class="details-label">Has Previous Work Experience</div>
+                        <div class="details-value">
+                            <span class="details-badge ${hasPrevExp ? 'badge-prev-yes' : 'badge-prev-no'}">
+                                ${hasPrevExp ? 'Yes' : 'No'}
+                            </span>
+                            ${hasPrevExp ? '<button class="btn btn-info btn-sm" style="margin-left: 1rem;" onclick="closeSelfEmployedDetailsModal(); viewPrevExp(' + person.graduate_id + ')"><i class="fas fa-eye"></i> View Previous Jobs</button>' : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('selfEmployedDetailsContent').innerHTML = html;
+            document.getElementById('selfEmployedDetailsModal').style.display = 'flex';
+        }
+
+        document.getElementById('selfEmployedDetailsModal').addEventListener('click', function(e) {
+            if (e.target === this) closeSelfEmployedDetailsModal();
+        });
+
         function editSelfEmployed(id) {
-            fetch(`self_employed_crud.php?action=get&id=${id}`)
+            fetch(`./functions/self_employed_crud.php?action=get&id=${id}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -336,17 +461,52 @@ try {
 
         function deleteSelfEmployed(id, business) {
             if (confirm(`Are you sure you want to delete the self-employment record for "${business}"?`)) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = 'self_employed_crud.php';
-                form.innerHTML = `<input type="hidden" name="action" value="delete"><input type="hidden" name="self_employment_id" value="${id}">`;
-                document.body.appendChild(form);
-                form.submit();
+                fetch('./functions/self_employed_crud.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `action=delete&self_employment_id=${id}`
+                })
+                .then(res => res.text())
+                .then(() => {
+                    window.location.reload();
+                })
+                .catch(err => alert('Error: ' + err));
             }
         }
 
         document.getElementById('selfEmployedModal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
+        });
+
+        // View Previous Experience
+        function viewPrevExp(graduateId) {
+            fetch('./functions/get_prev_exp.php?graduate_id=' + graduateId)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        let html = '';
+                        if (data.experiences.length === 0) {
+                            html = '<p style="text-align: center; color: var(--text-muted);">No previous experience records found.</p>';
+                        } else {
+                            data.experiences.forEach((exp, index) => {
+                                html += `<div class="prev-exp-card"><div class="prev-exp-header"><span class="prev-exp-num">#${index + 1}</span><span class="prev-exp-type">${exp.employment_type || 'N/A'}</span></div><div class="prev-exp-body"><div class="prev-exp-row"><strong>Company:</strong> ${exp.company_name || 'N/A'}</div><div class="prev-exp-row"><strong>Position:</strong> ${exp.position || 'N/A'}</div><div class="prev-exp-row"><strong>Nature of Business:</strong> ${exp.nature_of_business || 'N/A'}</div><div class="prev-exp-row"><strong>Job Description:</strong> ${exp.job_description || 'N/A'}</div><div class="prev-exp-row"><strong>Company Address:</strong> ${exp.company_address || 'N/A'}</div><div class="prev-exp-row"><strong>Duration:</strong> ${exp.date_from || 'N/A'} - ${exp.date_to || 'N/A'}</div><div class="prev-exp-row"><strong>Status:</strong> ${exp.employment_status || 'N/A'}</div></div></div>`;
+                            });
+                        }
+                        document.getElementById('prevExpContent').innerHTML = html;
+                        document.getElementById('prevExpModal').style.display = 'flex';
+                    } else {
+                        alert('Error loading previous experience data');
+                    }
+                })
+                .catch(err => alert('Error: ' + err));
+        }
+
+        function closePrevExpModal() {
+            document.getElementById('prevExpModal').style.display = 'none';
+        }
+
+        document.getElementById('prevExpModal').addEventListener('click', function(e) {
+            if (e.target === this) closePrevExpModal();
         });
 
         // Mobile Sidebar Toggle
